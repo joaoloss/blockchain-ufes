@@ -1,5 +1,4 @@
 from blockchain import Blockchain
-import random
 
 blockchain = Blockchain()
 

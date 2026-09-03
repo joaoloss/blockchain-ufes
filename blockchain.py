@@ -9,15 +9,15 @@ class Blockchain:
         self.chain = []
         self.current_transactions = []
         
-        # Criar o bloco gênesis
+        # Create the genesis block
         self.new_block(previous_hash='1', proof=100)
 
     def new_block(self, proof, previous_hash=None):
         """
-        Cria um novo bloco na Blockchain
-        :param proof: <int> A prova fornecida pelo PoW
-        :param previous_hash: (Opcional) <str> Hash do bloco anterior
-        :return: <dict> Novo bloco
+        Create a new Block in the Blockchain
+        :param proof: <int> The proof given by the Proof of Work algorithm
+        :param previous_hash: (Optional) <str> Hash of previous Block
+        :return: <dict> New Block
         """
         sha_current_transactions = self.hash(self.current_transactions)
         block = {
@@ -37,10 +37,10 @@ class Blockchain:
     
     def new_transaction(self, sender, recipient, amount):
         """
-        Cria uma nova transação para ir para o próximo bloco minerado
-        :param sender: <str> Endereço do remetente
-        :param recipient: <str> Endereço do destinatário
-        :param amount: <int> Quantidade
+        Create a new transaction to go into the next mined Block
+        :param sender: <str> Address of the Sender
+        :param recipient: <str> Address of the Recipient
+        :param amount: <int> Amount
         """
         self.current_transactions.append({
             'sender': sender,
@@ -51,21 +51,22 @@ class Blockchain:
     @staticmethod
     def hash(stuff):
         """
-        Cria um hash SHA-256 de um bloco
-        :param stuff: anything
-        :return: <str> Hash do bloco
+        Create a SHA-256 hash of the given object
+        :param stuff: anything serializable
+        :return: <str> SHA-256 hash hexdigest
         """
         block_string = json.dumps(stuff, sort_keys=True).encode()
         return hashlib.sha256(block_string).hexdigest()
     
     def proof_of_work(self, last_proof, sha_current_transactions):
         """
-        Algoritmo de prova de trabalho:
-        - Encontre um número p' tal que hash(last_proof, sha_current_transactions, p') contenha 4 zeros à esquerda
-        - p é a prova do bloco anterior , e p' é a nova prova
-        :param last_proof: <int>
-        :param sha_current_transactions: <str>
-        :return: <int>
+                Simple Proof of Work algorithm:
+                - Find a number p' such that hash(last_proof, sha_current_transactions, p') contains
+                    DIFFICULTY leading zeroes
+                - last_proof is the previous proof, and p' is the new proof
+                :param last_proof: <int>
+                :param sha_current_transactions: <str>
+                :return: <int>
         """
         proof = 0
         while self.valid_proof(last_proof, sha_current_transactions, proof) is False:
@@ -75,11 +76,12 @@ class Blockchain:
     @staticmethod
     def valid_proof(last_proof, sha_current_transactions, proof):
         """
-        Valida a prova: verifica se hash(last_proof, proof) contém 4 zeros à esquerda
-        :param last_proof: <int> Prova anterior
-        :param sha_current_transactions: <str> Hash das transações atuais
-        :param proof: <int> Prova atual
-        :return: <bool> TRUE se correto, FALSE se não
+        Validate the Proof: does hash(last_proof, sha_current_transactions, proof)
+        contain DIFFICULTY leading zeroes?
+        :param last_proof: <int> Previous proof
+        :param sha_current_transactions: <str> Hash of the current transactions
+        :param proof: <int> Current proof
+        :return: <bool> True if correct, False otherwise
         """
         guess = f'{last_proof}{sha_current_transactions}{proof}'.encode()
         guess_hash = hashlib.sha256(guess).hexdigest()
@@ -121,12 +123,12 @@ class Blockchain:
         return True
 
     def mine(self):
-        # Devemos receber uma recompensa por encontrar a prova.
-        # Por enquanto, não estamos em rede, então o único beneficiário é ELE
-        # O remetente é "0" para significar que este nó minerou uma nova moeda.
+        # We must receive a reward for finding the proof.
+        # For now, we're not in a network, so the only beneficiary is this node.
+        # The sender is "0" to signify that this node has mined a new coin.
         self.new_transaction(
             sender="0",
-            # escreva aqui seu nome, ao invés de nakamoto
+            # write your name here, instead of nakamoto
             recipient="joaoloss",
             amount=1,
         )
@@ -135,7 +137,7 @@ class Blockchain:
         last_block = self.last_block
         proof = self.proof_of_work(last_block["proof"], sha_current_transactions)
 
-        # Minera o novo bloco adicionando-o à cadeia
+        # Mine the new block by adding it to the chain
         previous_hash = self.hash(last_block)
         self.new_block(proof, previous_hash)
 
